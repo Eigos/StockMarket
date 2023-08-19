@@ -17,59 +17,35 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 public class BasicWebScrapper implements IWebScrapper<BasicStockInformation> {
-
+    
+    
     public BasicWebScrapper() {
     }
+    
+    private static final String baseUrl = "https://bigpara.hurriyet.com.tr";
 
     @Override
     public List<BasicStockInformation> getData() {
 
-        Document document;
-        ArrayList<BasicStockInformation> basicStockInformations = new ArrayList<BasicStockInformation>();
+        List<BasicStockInformation> basicStockInformations = new ArrayList<BasicStockInformation>();
+
         try {
-            String baseUrl = "https://bigpara.hurriyet.com.tr";
-            document = Jsoup
-                    .connect(baseUrl + "/borsa/canli-borsa/")
-                    .userAgent(
-                            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36")
-                    .header("Accept-Language", "*")
-                    .get();
 
-            Element elementBase = document.getElementById("sortable");
-            Elements elements = elementBase.getElementsByTag("ul");
+            Elements stockElements = getStockElements();
 
-            for (Element element : elements) {
+            for (Element element : stockElements) {
 
-                String elemSymbol = element.attr("data-symbol");
-                String elemValue = element.getElementsByClass("cell048 node-c").first().text().replace(".", "").replace(",", ".");
-                String elemLink = element.getElementsByAttributeValue("target", "_blank").first().attr("href");
-                String elemDescription;
-                
-                
-                {
-                    Document documentForDescriptiom = Jsoup
-                    .connect(baseUrl + elemLink)
-                    .userAgent(
-                        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36")
-                        .header("Accept-Language", "*")
-                        .get();
-                        
-                    elemDescription = documentForDescriptiom.getElementsByClass("pageTitle mBot10").first().text();
-                }
-                
-                
+                String elemSymbol = getSymbol(element);
+                String elemValue = getValue(element);
+                String elemDescription = getElementDescription(element);
+
+
                 basicStockInformations.add(new BasicStockInformation(
-                    elemSymbol,
-                    elemDescription,
-                    Double.parseDouble(elemValue))
-                    );
+                        elemSymbol,
+                        elemDescription,
+                        Double.parseDouble(elemValue)));
 
-                System.out.println("Elem Symbol: " + elemSymbol);
-                System.out.println("Elem Value: " + elemValue);
-                System.out.println("Elem ref link:" + elemLink);
-                System.out.println("Elem final link: " + baseUrl + elemLink);
-                System.out.println("Elem decription: " + elemDescription);
-                System.out.println("----");
+                System.out.println(basicStockInformations);
             }
 
         } catch (IOException e) {
@@ -77,6 +53,52 @@ public class BasicWebScrapper implements IWebScrapper<BasicStockInformation> {
         }
 
         return basicStockInformations;
+    }
+
+    protected Elements getStockElements() throws IOException {
+        Document document;
+        document = Jsoup
+                .connect(baseUrl + "/borsa/canli-borsa/")
+                .userAgent(
+                        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36")
+                .header("Accept-Language", "*")
+                .get();
+
+        Element elementBase = document.getElementById("sortable");
+        return elementBase.getElementsByTag("ul");
+    }
+
+    protected static String getSymbol(Element element) {
+        return element.attr("data-symbol");
+    }
+
+    protected static String getValue(Element element) {
+        return element.getElementsByClass("cell048 node-c")
+                .first()
+                .text()
+                .replace(".", "")
+                .replace(",", ".");
+    }
+
+    protected static String getDescriptionLink(Element element) {
+        return element.getElementsByAttributeValue("target", "_blank")
+                .first()
+                .attr("href");
+    }
+
+    protected static String getElementDescription(Element element) throws IOException{
+        Document documentForDescriptiom = Jsoup
+                            .connect(baseUrl + getDescriptionLink(element))
+                            .userAgent(
+                                    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36")
+                            .header("Accept-Language", "*")
+                            .get();
+
+        return documentForDescriptiom.getElementsByClass("pageTitle mBot10").first().text();
+    }
+
+    public static String getBaseUrl() {
+        return baseUrl;
     }
 
 }

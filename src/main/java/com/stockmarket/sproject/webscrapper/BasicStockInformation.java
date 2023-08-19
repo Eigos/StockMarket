@@ -63,5 +63,9 @@ public class BasicStockInformation {
             return false;
         return true;
     }
+    @Override
+    public String toString() {
+        return "BasicStockInformation [symbol=" + symbol + ", description=" + description + ", value=" + value + "]";
+    }
 
 }
