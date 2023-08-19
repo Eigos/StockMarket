@@ -20,7 +20,6 @@ import com.stockmarket.sproject.enums.Roles;
 
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
-import lombok.RequiredArgsConstructor;
 
 @AllArgsConstructor
 @NoArgsConstructor
