@@ -1,27 +1,19 @@
 package com.stockmarket.sproject.webscrapper;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
-import java.util.stream.Collectors;
-
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
+import org.springframework.stereotype.Component;
+import lombok.NoArgsConstructor;
 
+@Component("webScrapper")
+@NoArgsConstructor
 public class BasicWebScrapper implements IWebScrapper<BasicStockInformation> {
-    
-    
-    public BasicWebScrapper() {
-    }
-    
+
     private static final String baseUrl = "https://bigpara.hurriyet.com.tr";
 
     @Override
@@ -30,7 +22,7 @@ public class BasicWebScrapper implements IWebScrapper<BasicStockInformation> {
         List<BasicStockInformation> basicStockInformations = new ArrayList<BasicStockInformation>();
 
         try {
-
+            
             Elements stockElements = getStockElements();
 
             for (Element element : stockElements) {
@@ -44,8 +36,6 @@ public class BasicWebScrapper implements IWebScrapper<BasicStockInformation> {
                         elemSymbol,
                         elemDescription,
                         Double.parseDouble(elemValue)));
-
-                System.out.println(basicStockInformations);
             }
 
         } catch (IOException e) {

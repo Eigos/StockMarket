@@ -8,9 +8,13 @@ import java.util.concurrent.ExecutionException;
 
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
+import org.springframework.stereotype.Component;
 
+import lombok.NoArgsConstructor;
+
+@Component("webScrapperAsync")
+@NoArgsConstructor
 public class BasicWebScrapperAsync extends BasicWebScrapper {
-
 
     @Override
     public List<BasicStockInformation> getData() {
@@ -57,7 +61,7 @@ public class BasicWebScrapperAsync extends BasicWebScrapper {
 
             synchronized (stockList) {
                 stockList.add(basicStockInformation);
-                System.out.println(basicStockInformation);
+                //System.out.println(basicStockInformation);
             }
         });
     }
