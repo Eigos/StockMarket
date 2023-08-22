@@ -19,11 +19,13 @@ import org.hibernate.id.enhanced.SequenceStyleGenerator;
 import com.stockmarket.sproject.enums.TransactionType;
 
 import lombok.AllArgsConstructor;
+import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
+@Data
 public class TransactionHistory {
     
     @Id

@@ -1,5 +1,7 @@
 package com.stockmarket.sproject.model;
 
+import java.util.Date;
+
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -13,9 +15,11 @@ import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.SequenceGenerator;
 
+import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
 import org.hibernate.id.enhanced.SequenceStyleGenerator;
+import org.springframework.format.annotation.DateTimeFormat;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -33,8 +37,8 @@ public class StockHistory {
     @Column(updatable = false, nullable = false)
     int id;
 
-    //@CreationTimestamp
-    long updateTime;
+    @CreationTimestamp
+    Date updateTime;
 
     @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     StockType stockType;

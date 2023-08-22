@@ -13,13 +13,13 @@ class ScheduledDataFetchingConfig {
 
     private final WebScrapperService webScrapperService;
 
-    private static final long TASK_PERFORM_DELAY_MS = 2000;
+    private static final long TASK_PERFORM_DELAY_MS = 15000;
 
     ScheduledDataFetchingConfig(WebScrapperService webScrapperService){
         this.webScrapperService = webScrapperService;
     }
 
-    //@Scheduled(fixedRate = TASK_PERFORM_DELAY_MS)
+    @Scheduled(fixedRate = TASK_PERFORM_DELAY_MS)
     public void fetchData(){
         List<BasicStockInformation> dataList = webScrapperService.getDataFromNet();
 
