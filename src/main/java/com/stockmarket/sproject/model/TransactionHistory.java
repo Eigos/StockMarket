@@ -12,6 +12,10 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToOne;
 
+import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Parameter;
+import org.hibernate.id.enhanced.SequenceStyleGenerator;
+
 import com.stockmarket.sproject.enums.TransactionType;
 
 import lombok.AllArgsConstructor;
@@ -22,8 +26,10 @@ import lombok.NoArgsConstructor;
 @Entity
 public class TransactionHistory {
     
-    @GeneratedValue(strategy = GenerationType.SEQUENCE)
     @Id
+    @GeneratedValue(generator = "sequenceIdGenerator")
+    @GenericGenerator(name = "sequenceIdGenerator", strategy = "sequence", parameters = @Parameter(name = SequenceStyleGenerator.CONFIG_PREFER_SEQUENCE_PER_ENTITY, value = "true"))
+    @Column(updatable = false, nullable = false)
     int id;
 
     @ManyToOne

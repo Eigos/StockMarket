@@ -28,7 +28,6 @@ import lombok.NoArgsConstructor;
 public class StockType {
 
     @Id
-    //@GeneratedValue(strategy = GenerationType.SEQUENCE)
     @GeneratedValue(generator = "sequenceIdGenerator")
     @GenericGenerator(name = "sequenceIdGenerator", strategy = "sequence", parameters = @Parameter(name = SequenceStyleGenerator.CONFIG_PREFER_SEQUENCE_PER_ENTITY, value = "true"))
     @Column(updatable = false, nullable = false)

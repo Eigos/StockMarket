@@ -9,12 +9,17 @@ import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.validation.constraints.Email;
+
+import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Parameter;
+import org.hibernate.id.enhanced.SequenceStyleGenerator;
 
 import com.stockmarket.sproject.enums.Roles;
 
@@ -27,7 +32,9 @@ import lombok.NoArgsConstructor;
 public class Account {
     
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(generator = "sequenceIdGenerator")
+    @GenericGenerator(name = "sequenceIdGenerator", strategy = "sequence", parameters = @Parameter(name = SequenceStyleGenerator.CONFIG_PREFER_SEQUENCE_PER_ENTITY, value = "true"))
+    @Column(updatable = false, nullable = false)
     int id;
     
     String name;
@@ -39,7 +46,7 @@ public class Account {
 
     String password;
     
-    @OneToMany(mappedBy =  "account")
+    @OneToMany(mappedBy =  "account", fetch = FetchType.LAZY)
     @Column(name = "portfolio_id")
     private Set<TransactionHistory> transactionHistory = new HashSet<>();
     
@@ -51,13 +58,13 @@ public class Account {
 
     double balance;
 
-    @OneToMany(mappedBy = "creator")
+    @OneToMany(mappedBy = "creator", fetch = FetchType.LAZY)
     Set<GiftCard> creatorGiftCards = new HashSet<>();
 
-    @OneToMany(mappedBy = "targetAccount")
+    @OneToMany(mappedBy = "targetAccount", fetch = FetchType.LAZY)
     Set<GiftCard> targetGiftCards = new HashSet<>();
 
-    @OneToOne(mappedBy = "account")
+    @OneToOne(mappedBy = "account", fetch = FetchType.LAZY)
     RuleSet ruleSet;
     
 }
