@@ -78,5 +78,5 @@ target
 secrets.yml
 .gradletasknamecache
 .sts4-cache
-secrets_mssql.properties
-secrets_mysql.properties
+*.properties
+!application.properties

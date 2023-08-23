@@ -9,9 +9,10 @@ import javax.transaction.Transactional;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import com.stockmarket.sproject.Service.StockHistoryService;
-import com.stockmarket.sproject.model.StockType;
-import com.stockmarket.sproject.repository.IStockTypeRepository;
+
+import com.stockmarket.sproject.application.Service.StockHistoryService;
+import com.stockmarket.sproject.application.model.StockType;
+import com.stockmarket.sproject.application.repository.IStockTypeRepository;
 
 @Service
 public class WebScrapperService {

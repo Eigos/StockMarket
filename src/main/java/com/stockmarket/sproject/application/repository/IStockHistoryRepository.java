@@ -1,11 +1,9 @@
-package com.stockmarket.sproject.repository;
+package com.stockmarket.sproject.application.repository;
 
 import org.springframework.data.repository.CrudRepository;
 
-import com.stockmarket.sproject.model.StockHistory;
-import com.stockmarket.sproject.model.StockType;
-
-import java.util.List;
+import com.stockmarket.sproject.application.model.StockHistory;
+import com.stockmarket.sproject.application.model.StockType;
 
 
 public interface IStockHistoryRepository extends CrudRepository<StockHistory, Integer>{

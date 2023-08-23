@@ -1,16 +1,16 @@
-package com.stockmarket.sproject.Service;
+package com.stockmarket.sproject.application.Service;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
 
-import com.stockmarket.sproject.model.StockHistory;
-import com.stockmarket.sproject.model.StockType;
-import com.stockmarket.sproject.model.TransactionHistory;
-import com.stockmarket.sproject.repository.IStockHistoryRepository;
-import com.stockmarket.sproject.repository.IStockTypeRepository;
-import com.stockmarket.sproject.repository.ITransactionHistory;
+import com.stockmarket.sproject.application.model.StockHistory;
+import com.stockmarket.sproject.application.model.StockType;
+import com.stockmarket.sproject.application.model.TransactionHistory;
+import com.stockmarket.sproject.application.repository.IStockHistoryRepository;
+import com.stockmarket.sproject.application.repository.IStockTypeRepository;
+import com.stockmarket.sproject.application.repository.ITransactionHistory;
 import com.stockmarket.sproject.webscrapper.BasicStockInformation;
 
 @Service

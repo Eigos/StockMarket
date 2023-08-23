@@ -1,32 +1,30 @@
-package com.stockmarket.sproject.model;
+package com.stockmarket.sproject.application.model;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
 import javax.persistence.OneToOne;
 
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
 import org.hibernate.id.enhanced.SequenceStyleGenerator;
 
-import com.stockmarket.sproject.enums.TransactionType;
+import com.stockmarket.sproject.application.enums.RuleType;
 
 import lombok.AllArgsConstructor;
-import lombok.Data;
 import lombok.NoArgsConstructor;
 
-@AllArgsConstructor
-@NoArgsConstructor
 @Entity
-@Data
-public class TransactionHistory {
+@NoArgsConstructor
+@AllArgsConstructor
+public class RuleSet {
     
     @Id
     @GeneratedValue(generator = "sequenceIdGenerator")
@@ -34,18 +32,17 @@ public class TransactionHistory {
     @Column(updatable = false, nullable = false)
     int id;
 
-    @ManyToOne
-    @JoinColumn(name = "account_portfolio_id")
-    private Account account;
+    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JoinColumn(name = "account_id", referencedColumnName = "id")
+    Account account;
 
-    @OneToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "stock_history_id", referencedColumnName = "id")
-    private StockHistory stockHistory;
+    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JoinColumn(name = "stock_type_id", referencedColumnName = "id")
+    StockType stockType;
 
-    private int quantity;
-    
     @Enumerated(EnumType.STRING) 
-    @Column(name="transaction_type")
-    private TransactionType transactionType;
+    @Column(name="rule_type")
+    RuleType ruleType;
 
+    double value;
 }

@@ -1,4 +1,4 @@
-package com.stockmarket.sproject.enums;
+package com.stockmarket.sproject.application.enums;
 
 public enum TransactionType {
     PURCHASE,

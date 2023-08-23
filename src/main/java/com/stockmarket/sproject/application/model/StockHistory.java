@@ -1,4 +1,4 @@
-package com.stockmarket.sproject.model;
+package com.stockmarket.sproject.application.model;
 
 import java.util.Date;
 
