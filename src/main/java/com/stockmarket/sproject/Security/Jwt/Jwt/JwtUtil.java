@@ -1,16 +1,15 @@
 package com.stockmarket.sproject.Security.Jwt.Jwt;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
-import com.stockmarket.sproject.Security.Jwt.Dto.TokenDto;
+import com.stockmarket.sproject.Security.Jwt.Dto.TokenResponse;
 
-import java.security.Timestamp;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
+
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
@@ -19,9 +18,7 @@ import io.jsonwebtoken.SignatureAlgorithm;
 @Service
 public class JwtUtil {
 
-    
-    @Value("${JWT.SECRET_KEY}")
-    private String SECRET_KEY;
+    private static final String SECRET_KEY = "cozef";
 
     // verilen token a ait kullanıcı adını döndürür.
     public String extractUsername(String token) {
@@ -54,11 +51,11 @@ public class JwtUtil {
         return createToken(claims, userDetails.getUsername());
     }
 
-    public TokenDto generateTokenDto(UserDetails userDetails) {
+    public TokenResponse generateTokenDto(UserDetails userDetails) {
         Map<String, Object> claims = new HashMap<>();
         String token = createToken(claims, userDetails.getUsername());
 
-        return TokenDto.builder()
+        return TokenResponse.builder()
                 .expirationDate(new Date(Long.parseLong(claims.get("exp").toString())))
                 .issueDate(new Date(Long.parseLong(claims.get("iat").toString())))
                 .user(claims.get("sub").toString())

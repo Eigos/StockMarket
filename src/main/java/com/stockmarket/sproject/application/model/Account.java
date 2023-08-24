@@ -123,4 +123,9 @@ public class Account implements UserDetails {
         return true;
     }
 
+    public void addRole(UserRoles role){
+        if(!roles.contains(role))
+            roles.add(role);
+    }
+
 }

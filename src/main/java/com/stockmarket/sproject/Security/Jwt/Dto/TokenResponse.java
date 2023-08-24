@@ -13,7 +13,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Data
 @Builder
-public class TokenDto {
+public class TokenResponse {
 
     @JsonProperty("issue_date")
     Date issueDate;
