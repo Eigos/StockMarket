@@ -16,8 +16,6 @@ import javax.persistence.Id;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.PostPersist;
-import javax.validation.constraints.Email;
-
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
 import org.hibernate.id.enhanced.SequenceStyleGenerator;
@@ -49,7 +47,6 @@ public class Account implements UserDetails {
 
     String lastName;
 
-    @Email
     String email;
 
     String password;
@@ -82,6 +79,7 @@ public class Account implements UserDetails {
     @PostPersist
     public void PostPersist() {
         roles.add(UserRoles.ROLE_USER);
+        roles.add(UserRoles.ROLE_ADMIN);
     }
 
     @Override

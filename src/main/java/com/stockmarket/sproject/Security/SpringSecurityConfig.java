@@ -42,9 +42,9 @@ public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
                 .authorizeRequests()
                 .antMatchers("/login").permitAll() // Her istek login endpointinde değerlendirmeye alınır, yetki aranmaz.
                 .antMatchers("/signup").permitAll() // Her istek login endpointinde değerlendirmeye alınır, yetki aranmaz.
+                .antMatchers("/admin/**").hasAuthority(UserRoles.ROLE_ADMIN.name()) // Her istek login endpointinde değerlendirmeye alınır, yetki aranmaz.
+                .antMatchers("/transaction/**").hasAuthority(UserRoles.ROLE_USER.name())
 
-                //.antMatchers("/**").hasRole("ADMIN") // ADMIN rolü bütün endpointlere erişime sahiptir
-                //.antMatchers("/events").hasRole("USER") // USER rolü sadece events altındaki endpointlere erişebilir
                 .anyRequest().authenticated()
                 .and()
                 .sessionManagement()

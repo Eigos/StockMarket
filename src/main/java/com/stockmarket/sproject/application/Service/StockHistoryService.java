@@ -9,7 +9,7 @@ import com.stockmarket.sproject.application.model.StockType;
 import com.stockmarket.sproject.application.model.TransactionHistory;
 import com.stockmarket.sproject.application.repository.IStockHistoryRepository;
 import com.stockmarket.sproject.application.repository.IStockTypeRepository;
-import com.stockmarket.sproject.application.repository.ITransactionHistory;
+import com.stockmarket.sproject.application.repository.ITransactionHistoryRepository;
 import com.stockmarket.sproject.webscrapper.BasicStockInformation;
 
 @Service
@@ -19,16 +19,16 @@ public class StockHistoryService {
 
     private final IStockTypeRepository stockTypeRepository;
 
-    private final ITransactionHistory transactionHistory;
+    private final ITransactionHistoryRepository transactionHistoryRepository;
 
     private static final int DEFUALT_QUANTITY = 1000;
 
     public StockHistoryService(IStockHistoryRepository stockHistoryRepository,
             IStockTypeRepository stockTypeRepository,
-            ITransactionHistory transactionHistory) {
+            ITransactionHistoryRepository transactionHistoryRepository) {
         this.stockHistoryRepository = stockHistoryRepository;
         this.stockTypeRepository = stockTypeRepository;
-        this.transactionHistory = transactionHistory;
+        this.transactionHistoryRepository = transactionHistoryRepository;
 
     }
 
@@ -73,7 +73,7 @@ public class StockHistoryService {
         int stockQuantityPrevious = stockHistoryPrevious.getQuantity();
         int stockQuantitySpent = 0;
         
-        List<TransactionHistory> transactionHistories = transactionHistory.findAllByStockHistory(stockHistoryPrevious);
+        List<TransactionHistory> transactionHistories = transactionHistoryRepository.findAllByStockHistory(stockHistoryPrevious);
         
         for (TransactionHistory transactionHistory : transactionHistories) {
             stockQuantitySpent += transactionHistory.getQuantity();
