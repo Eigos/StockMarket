@@ -15,12 +15,15 @@ import lombok.NoArgsConstructor;
 @Data
 @Builder
 
-@JsonPropertyOrder({"name", "symbol", "requested_amount", "value", "commission_cut", "total_price", "date"})
+@JsonPropertyOrder({"name", "symbol", "transaction_type", "requested_amount", "value", "commission_cut", "total_price", "date"})
 public class TransactionHistoryElement {
     
     String name;
 
     String symbol;
+    
+    @JsonProperty(value = "transaction_type")
+    String transactionType;
 
     @JsonProperty(value = "requested_amount")
     String requestedAmount;

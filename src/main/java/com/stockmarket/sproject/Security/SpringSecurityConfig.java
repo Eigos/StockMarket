@@ -4,6 +4,7 @@ package com.stockmarket.sproject.Security;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.BeanIds;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
@@ -44,6 +45,9 @@ public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers("/signup").permitAll() // Her istek login endpointinde değerlendirmeye alınır, yetki aranmaz.
                 .antMatchers("/admin/**").hasAuthority(UserRoles.ROLE_ADMIN.name()) // Her istek login endpointinde değerlendirmeye alınır, yetki aranmaz.
                 .antMatchers("/transaction/**").hasAuthority(UserRoles.ROLE_USER.name())
+                .antMatchers(HttpMethod.GET,"/gift-card").hasAuthority(UserRoles.ROLE_ADMIN.name())
+                .antMatchers(HttpMethod.POST,"/gift-card").hasAuthority(UserRoles.ROLE_USER.name())
+
 
                 .anyRequest().authenticated()
                 .and()

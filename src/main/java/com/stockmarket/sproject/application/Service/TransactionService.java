@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import com.stockmarket.sproject.application.UtilMethods;
 import com.stockmarket.sproject.application.dto.StockPurchaseRequest;
 import com.stockmarket.sproject.application.dto.StockPurchaseResponse;
+import com.stockmarket.sproject.application.dto.StockSellRequest;
 import com.stockmarket.sproject.application.dto.TransactionHistoryElement;
 import com.stockmarket.sproject.application.dto.TransactionHistoryResponse;
 import com.stockmarket.sproject.application.enums.TransactionType;
@@ -68,7 +69,7 @@ public class TransactionService {
         int desiredQuantity = stockPurchaseRequest.getQuantity();
         double unitPrice = stockHistoryElement.getValue();
 
-        if(!stockAccessiblityService.isStockAccessible(stockType.getId()))
+        if (!stockAccessiblityService.isStockAccessible(stockType.getId()))
             throw new Exception("Stock is closed to transaction");
 
         // Not enough stock
@@ -103,6 +104,52 @@ public class TransactionService {
                 .build();
     }
 
+    public StockPurchaseResponse SellStock(String username, StockSellRequest stockSellRequest) throws Exception {
+        Account account = accountRepository.findByEmail(username);
+        StockType stockType = stockTypeRepository.findFirstBySymbol(stockSellRequest.getStockSymbol());
+        StockHistory stockHistoryElement = stockHistoryRepository.findFirstByStockTypeOrderByUpdateTimeAsc(stockType);
+        int quantity = stockHistoryElement.getQuantity();
+        int desiredQuantity = stockSellRequest.getQuantity();
+        double unitPrice = stockHistoryElement.getValue();
+
+        if (!stockAccessiblityService.isStockAccessible(stockType.getId()))
+            throw new Exception("Stock is closed to transaction");
+
+        // Not enough stock
+        if (StockQuantityCheck(desiredQuantity, quantity))
+            throw new Exception("Not enough stock");
+
+        if (!CanPurchaseStock(account.getBalance(), unitPrice, desiredQuantity))
+            throw new Exception("Not enough balance");
+
+        account.setBalance(account.getBalance() + (PurchasePriceCalculate(unitPrice, desiredQuantity)
+                - PurchaseCalculateCommission(unitPrice, desiredQuantity)));
+
+        systemBalance += PurchaseCalculateCommission(unitPrice, desiredQuantity);
+
+        transactionHistoryRepository.save(
+                TransactionHistory.builder()
+                        .account(account)
+                        .stockHistory(stockHistoryElement)
+                        .quantity(desiredQuantity)
+                        .transactionType(TransactionType.SELL)
+                        .commissionRate(getCommissionRate())
+                        .build());
+
+        accountRepository.save(account);
+
+        return StockPurchaseResponse.builder()
+                .stockSymbol(stockType.getSymbol())
+                .stockName(stockType.getName())
+                .stockUnitPrice(UtilMethods.FormatDouble(unitPrice))
+                .purchaseDate(Date.from(LocalDate.now().atStartOfDay(ZoneId.systemDefault()).toInstant()))
+                .requestedQuantity(desiredQuantity)
+                .totalPrice(UtilMethods.FormatDouble((PurchasePriceCalculate(unitPrice, desiredQuantity)
+                        - PurchaseCalculateCommission(unitPrice, desiredQuantity))))
+                .build();
+
+    }
+
     private boolean CanPurchaseStock(double balance, double stockUnitPrice, int quantity) {
         return (balance - PurchasePriceCalculateTotal(stockUnitPrice, quantity)) >= 0;
     }
@@ -123,7 +170,7 @@ public class TransactionService {
         return requestedQuantity > stockQuantity;
     }
 
-    public TransactionHistoryResponse PurchaseStockHistory(String username) {
+    public TransactionHistoryResponse StockHistory(String username) {
         Account account = accountRepository.findByEmail(username);
 
         List<TransactionHistoryElement> elements = new ArrayList<TransactionHistoryElement>();
@@ -146,6 +193,7 @@ public class TransactionService {
                             .totalPrice(UtilMethods.FormatDouble(PurchasePriceCalculateTotal(stockHistory.getValue(),
                                     transactionHistoryElement.getQuantity())))
                             .date(transactionHistoryElement.getTransactionDate())
+                            .transactionType(transactionHistoryElement.getTransactionType().name())
                             .build());
 
         }
@@ -158,7 +206,6 @@ public class TransactionService {
                 .build();
 
         return transactionHistoryResponse;
-
     }
 
     public double getCommissionRate() {

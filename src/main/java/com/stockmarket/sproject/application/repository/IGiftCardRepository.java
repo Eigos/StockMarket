@@ -6,5 +6,5 @@ import com.stockmarket.sproject.application.model.GiftCard;
 
 
 public interface IGiftCardRepository extends CrudRepository<GiftCard, Integer> {
-    
+    GiftCard findBycardCode(String code);
 }

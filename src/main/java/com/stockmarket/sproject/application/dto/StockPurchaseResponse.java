@@ -24,7 +24,7 @@ public class StockPurchaseResponse {
     @JsonProperty("stock_unit_price")
     String stockUnitPrice;
     
-    @JsonProperty("purchase_date")
+    @JsonProperty("order_date")
     Date purchaseDate;
     
     @JsonProperty("requested_quantity")
