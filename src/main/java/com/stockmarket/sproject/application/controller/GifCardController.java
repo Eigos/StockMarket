@@ -5,6 +5,7 @@ import java.util.Optional;
 import javax.validation.Valid;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -33,14 +34,13 @@ public class GifCardController {
         this.giftCardService = giftCardService;
     }
 
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @GetMapping
     public ResponseEntity<GiftCardResponse> GenerateGiftCard(
             @Valid @RequestBody GiftCardRequest cardRequest) {
 
         UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext()
                 .getAuthentication().getPrincipal();
-
-                
 
         return ResponseEntity.ok().body(
                 giftCardService.generateGiftCard(
@@ -49,6 +49,7 @@ public class GifCardController {
                         cardRequest.getValue()));
     }
 
+    @PreAuthorize("hasRole('ROLE_USER')")
     @PostMapping
     public ResponseEntity<String> UseGiftCard(
             @Valid @RequestBody GiftCardUseRequest giftCardUseRequest) throws Exception {

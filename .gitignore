@@ -80,3 +80,4 @@ secrets.yml
 .sts4-cache
 *.properties
 !application.properties
+excel_history/

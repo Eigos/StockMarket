@@ -5,6 +5,7 @@ import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 
@@ -104,11 +105,28 @@ public class TransactionService {
                 .build();
     }
 
+    private int getCurrentQuantity(Account account, String symbol) {
+        int quantity = 0;
+        
+        for (TransactionHistory transactionHistory : account.getTransactionHistory()) {
+            if (transactionHistory.getStockHistory().getStockType().getSymbol() != symbol)
+                continue;
+
+            quantity += (transactionHistory.getTransactionType() == TransactionType.PURCHASE)
+                    ? transactionHistory.getQuantity()
+                    : transactionHistory.getQuantity() * (-1);
+        }
+
+        return quantity;
+    }
+
     public StockPurchaseResponse SellStock(String username, StockSellRequest stockSellRequest) throws Exception {
         Account account = accountRepository.findByEmail(username);
         StockType stockType = stockTypeRepository.findFirstBySymbol(stockSellRequest.getStockSymbol());
         StockHistory stockHistoryElement = stockHistoryRepository.findFirstByStockTypeOrderByUpdateTimeAsc(stockType);
-        int quantity = stockHistoryElement.getQuantity();
+
+        int quantity = getCurrentQuantity(account, stockType.getSymbol());
+
         int desiredQuantity = stockSellRequest.getQuantity();
         double unitPrice = stockHistoryElement.getValue();
 
@@ -118,9 +136,6 @@ public class TransactionService {
         // Not enough stock
         if (StockQuantityCheck(desiredQuantity, quantity))
             throw new Exception("Not enough stock");
-
-        if (!CanPurchaseStock(account.getBalance(), unitPrice, desiredQuantity))
-            throw new Exception("Not enough balance");
 
         account.setBalance(account.getBalance() + (PurchasePriceCalculate(unitPrice, desiredQuantity)
                 - PurchaseCalculateCommission(unitPrice, desiredQuantity)));
@@ -170,8 +185,12 @@ public class TransactionService {
         return requestedQuantity > stockQuantity;
     }
 
-    public TransactionHistoryResponse StockHistory(String username) {
+    public TransactionHistoryResponse StockHistory(String username) throws Exception {
+
         Account account = accountRepository.findByEmail(username);
+
+        if (account == null)
+            throw new Exception("Account not found");
 
         List<TransactionHistoryElement> elements = new ArrayList<TransactionHistoryElement>();
 

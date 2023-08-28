@@ -13,8 +13,11 @@ import com.stockmarket.sproject.application.repository.IAccountRepository;
 @Service
 public class CustomUserDetailsService implements UserDetailsService {
 
-    @Autowired
     private IAccountRepository accountRepository;
+
+    public CustomUserDetailsService(IAccountRepository accountRepository) {
+        this.accountRepository = accountRepository;
+    }
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {

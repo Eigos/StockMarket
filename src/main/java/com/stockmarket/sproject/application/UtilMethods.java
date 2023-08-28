@@ -1,6 +1,9 @@
 package com.stockmarket.sproject.application;
 
 import java.security.SecureRandom;
+import java.util.Optional;
+
+import com.stockmarket.sproject.application.model.Account;
 
 public class UtilMethods {
     public static String FormatDouble(double value) {
@@ -30,4 +33,5 @@ public class UtilMethods {
             return keyBuilder.toString();
         }
     }
+
 }

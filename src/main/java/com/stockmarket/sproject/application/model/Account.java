@@ -28,6 +28,7 @@ import com.stockmarket.sproject.Security.Jwt.Authoritie;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 @AllArgsConstructor
@@ -35,6 +36,7 @@ import lombok.NoArgsConstructor;
 @Data
 @Builder
 @Entity
+@EqualsAndHashCode
 public class Account implements UserDetails {
 
     @Id
@@ -54,6 +56,7 @@ public class Account implements UserDetails {
     @Builder.Default
     @OneToMany(mappedBy = "account", fetch = FetchType.LAZY)
     @Column(name = "portfolio_id")
+    @EqualsAndHashCode.Exclude
     private Set<TransactionHistory> transactionHistory = new HashSet<>();
 
     @Builder.Default
@@ -61,19 +64,23 @@ public class Account implements UserDetails {
     @Enumerated(EnumType.STRING)
     @CollectionTable(name = "account_roles")
     @Column(name = "roles")
+    @EqualsAndHashCode.Exclude
     private Set<UserRoles> roles = new HashSet<>();
 
     double balance;
 
     @Builder.Default
     @OneToMany(mappedBy = "creator", fetch = FetchType.LAZY)
+    @EqualsAndHashCode.Exclude
     Set<GiftCard> creatorGiftCards = new HashSet<>();
 
     @Builder.Default
     @OneToMany(mappedBy = "targetAccount", fetch = FetchType.LAZY)
+    @EqualsAndHashCode.Exclude
     Set<GiftCard> targetGiftCards = new HashSet<>();
 
     @OneToOne(mappedBy = "account", fetch = FetchType.LAZY)
+    @EqualsAndHashCode.Exclude
     RuleSet ruleSet;
 
     @PostPersist

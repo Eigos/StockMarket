@@ -14,11 +14,13 @@ import org.hibernate.annotations.Parameter;
 import org.hibernate.id.enhanced.SequenceStyleGenerator;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 @NoArgsConstructor
 @Entity
 @Data
+@EqualsAndHashCode
 public class StockType {
 
     @Id
@@ -34,9 +36,11 @@ public class StockType {
     String description;
 
     @OneToMany(mappedBy = "stockType", fetch = FetchType.LAZY)
+    @EqualsAndHashCode.Exclude
     Set<StockHistory> stockHistory;
 
     @OneToOne(mappedBy = "stockType", fetch = FetchType.LAZY)
+    @EqualsAndHashCode.Exclude
     RuleSet ruleSet;
 
 }

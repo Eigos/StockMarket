@@ -23,6 +23,7 @@ import com.stockmarket.sproject.application.enums.TransactionType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 @AllArgsConstructor
@@ -30,6 +31,7 @@ import lombok.NoArgsConstructor;
 @Entity
 @Data
 @Builder
+@EqualsAndHashCode
 public class TransactionHistory {
     
     @Id
@@ -40,16 +42,19 @@ public class TransactionHistory {
 
     @ManyToOne
     @JoinColumn(name = "account_portfolio_id")
+    @EqualsAndHashCode.Exclude
     private Account account;
 
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "stock_history_id", referencedColumnName = "id")
+    @EqualsAndHashCode.Exclude
     private StockHistory stockHistory;
 
     private int quantity;
     
     @Enumerated(EnumType.STRING) 
     @Column(name="transaction_type")
+    @EqualsAndHashCode.Exclude
     private TransactionType transactionType;
 
     @CreationTimestamp

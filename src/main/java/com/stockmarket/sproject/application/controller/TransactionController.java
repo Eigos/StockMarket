@@ -1,8 +1,12 @@
 package com.stockmarket.sproject.application.controller;
 
+import java.io.ByteArrayInputStream;
+
 import javax.validation.Valid;
 
 import org.apache.catalina.connector.Response;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -12,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.stockmarket.sproject.application.ExcelConverter;
 import com.stockmarket.sproject.application.Service.TransactionService;
 import com.stockmarket.sproject.application.dto.StockPurchaseRequest;
 import com.stockmarket.sproject.application.dto.StockPurchaseResponse;
@@ -23,11 +28,13 @@ import com.stockmarket.sproject.application.dto.TransactionHistoryResponse;
 public class TransactionController {
 
     private TransactionService transactionService;
+    private ExcelConverter excelConverter;
 
     TransactionController(
-            TransactionService transactionService) {
+            TransactionService transactionService,
+            ExcelConverter excelConverter) {
         this.transactionService = transactionService;
-
+        this.excelConverter = excelConverter;
     }
 
     @PostMapping("/purchase")
@@ -59,7 +66,7 @@ public class TransactionController {
     }
 
     @GetMapping("/history")
-    public ResponseEntity<TransactionHistoryResponse> getPurchaseStockHistory(){
+    public ResponseEntity<TransactionHistoryResponse> getPurchaseStockHistory() throws Exception{
 
         UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext()
                 .getAuthentication().getPrincipal();
@@ -69,6 +76,23 @@ public class TransactionController {
         TransactionHistoryResponse responseBody = transactionService.StockHistory(username);
 
         return ResponseEntity.ok(responseBody);
+    }
+
+    @GetMapping("/history-excel")
+    public ResponseEntity<InputStreamResource> getPurchaseStockHistoryExcel() throws Exception{
+
+        UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext()
+                .getAuthentication().getPrincipal();
+
+        String username = userDetails.getUsername();
+
+        ByteArrayInputStream in = excelConverter.get(username);
+
+        HttpHeaders headers = new HttpHeaders();
+
+        headers.add("Content-Disposition", "attachment; filename=transaction_history.csv");
+
+        return ResponseEntity.ok().headers(headers).body(new InputStreamResource(in));
     }
 
 }

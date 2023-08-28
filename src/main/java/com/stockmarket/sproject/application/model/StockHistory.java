@@ -16,12 +16,14 @@ import org.hibernate.annotations.Parameter;
 import org.hibernate.id.enhanced.SequenceStyleGenerator;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
 @Data
+@EqualsAndHashCode
 public class StockHistory {
     
     @Id
@@ -34,6 +36,7 @@ public class StockHistory {
     Date updateTime;
 
     @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @EqualsAndHashCode.Exclude
     StockType stockType;
 
     double value;
@@ -41,5 +44,6 @@ public class StockHistory {
     int quantity;
 
     @OneToOne(mappedBy = "stockHistory", fetch = FetchType.LAZY)
+    @EqualsAndHashCode.Exclude
     TransactionHistory transactionHistory;
 }

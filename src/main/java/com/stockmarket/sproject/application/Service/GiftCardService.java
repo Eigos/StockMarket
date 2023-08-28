@@ -58,15 +58,15 @@ public class GiftCardService {
 
         Account account = accountRepository.findByEmail(accountStr);
 
+        if(account == null)
+            throw new Exception("Account could not found");
+
         GiftCard giftCard = giftCardRepository.findBycardCode(cardCode);
 
         if(giftCard == null)
             throw new Exception("Unable to find gift card");
 
         if(giftCard.getTargetAccount() != null){
-
-            if(account == null)
-                throw new Exception("Account could not found");
 
             if(Integer.compare(giftCard.getTargetAccount().getId(), account.getId()) != 1)
                 throw new Exception("Given account and gift card's target account does not match");

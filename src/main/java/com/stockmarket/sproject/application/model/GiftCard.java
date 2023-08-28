@@ -18,6 +18,7 @@ import org.hibernate.id.enhanced.SequenceStyleGenerator;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 @NoArgsConstructor
@@ -25,6 +26,7 @@ import lombok.NoArgsConstructor;
 @Entity
 @Data
 @Builder
+@EqualsAndHashCode
 public class GiftCard {
 
     @Id
@@ -35,10 +37,12 @@ public class GiftCard {
     
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "creator_id")
+    @EqualsAndHashCode.Exclude
     Account creator;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "target_account_id")
+    @EqualsAndHashCode.Exclude
     Account targetAccount;
 
     double value;
