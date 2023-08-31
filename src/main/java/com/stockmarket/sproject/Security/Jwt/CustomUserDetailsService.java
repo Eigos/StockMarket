@@ -1,6 +1,5 @@
 package com.stockmarket.sproject.Security.Jwt;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -20,8 +19,8 @@ public class CustomUserDetailsService implements UserDetailsService {
     }
 
     @Override
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        return accountRepository.findByEmail(username);
+    public UserDetails loadUserByUsername(String username) {
+        return accountRepository.findByEmail(username).orElse(null);
     }
 
     public void createAccount(SignUpRequest accountRequest){

@@ -5,35 +5,40 @@ import java.time.ZoneId;
 import java.util.Date;
 import java.util.Optional;
 
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-import com.stockmarket.sproject.application.UtilMethods;
 import com.stockmarket.sproject.application.dto.GiftCardResponse;
+import com.stockmarket.sproject.application.exception_handler.EntityNotFoundException;
+import com.stockmarket.sproject.application.exception_handler.custom_exceptions.MessageException;
 import com.stockmarket.sproject.application.model.Account;
 import com.stockmarket.sproject.application.model.GiftCard;
 import com.stockmarket.sproject.application.repository.IAccountRepository;
 import com.stockmarket.sproject.application.repository.IGiftCardRepository;
+import com.stockmarket.sproject.application.util.BasicKeyGenerator;
+import com.stockmarket.sproject.application.util.IKeyGenerator;
 
 @Service
 public class GiftCardService {
 
-    IGiftCardRepository giftCardRepository;
-    IAccountRepository accountRepository;
+    private final IGiftCardRepository giftCardRepository;
+    
+    private final AccountService accountService;
 
     GiftCardService(IGiftCardRepository giftCardRepository,
-            IAccountRepository accountRepository) {
+            AccountService accountService) {
         this.giftCardRepository = giftCardRepository;
-        this.accountRepository = accountRepository;
+        this.accountService = accountService;
     }
 
     public GiftCardResponse generateGiftCard(String creatorAccountStr, Optional<String> targeAccountStr, double value) {
 
-        Account creatorAccount = accountRepository.findByEmail(creatorAccountStr);
+        Account creatorAccount = accountService.getAccountByEmail(creatorAccountStr);
         
-        Account targeAccount = targeAccountStr.isPresent() ? accountRepository.findByEmail(targeAccountStr.get()) : null;
+        Account targeAccount = targeAccountStr.isPresent() ? accountService.getAccountByEmail(targeAccountStr.get()) : null;
 
-        String giftCardCode = UtilMethods.KeyGenerator.generateKey();
+        IKeyGenerator keyGenerator = new BasicKeyGenerator();
+
+        String giftCardCode = keyGenerator.getKey();
 
         GiftCard giftCard = GiftCard.builder()
                 .creator(creatorAccount)
@@ -54,34 +59,30 @@ public class GiftCardService {
                 .build();
     }
 
-    public void UseGiftCard(String accountStr, String cardCode) throws Exception{
+    public void UseGiftCard(String accountStr, String cardCode) throws RuntimeException{
 
-        Account account = accountRepository.findByEmail(accountStr);
+        Account account = accountService.getAccountByEmail(accountStr);
 
-        if(account == null)
-            throw new Exception("Account could not found");
-
-        GiftCard giftCard = giftCardRepository.findBycardCode(cardCode);
-
-        if(giftCard == null)
-            throw new Exception("Unable to find gift card");
+        GiftCard giftCard = getCard(cardCode);
 
         if(giftCard.getTargetAccount() != null){
 
             if(Integer.compare(giftCard.getTargetAccount().getId(), account.getId()) != 1)
-                throw new Exception("Given account and gift card's target account does not match");
+                throw new MessageException("Given account and gift card's target account does not match");
         }
-
-        if(!giftCard.getCardCode().equals(cardCode))
-            throw new Exception("Gift card code does not match");
 
         account.setBalance(account.getBalance() + giftCard.getValue());
 
-        accountRepository.save(account);
+        accountService.save(account);
 
         giftCard.setUsedTime(Date.from(LocalDate.now().atStartOfDay(ZoneId.systemDefault()).toInstant()));
 
         giftCard.setValid(false);
+    }
+
+    public GiftCard getCard(String cardCode){
+        return giftCardRepository.findBycardCode(cardCode)
+            .orElseThrow(()-> new EntityNotFoundException(GiftCard.class, "cardCode", cardCode));
     }
 
 }

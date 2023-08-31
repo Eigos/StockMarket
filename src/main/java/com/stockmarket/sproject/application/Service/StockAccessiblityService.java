@@ -2,29 +2,28 @@ package com.stockmarket.sproject.application.Service;
 
 import java.util.HashMap;
 import java.util.Map;
-import org.springframework.stereotype.Service;
 
-import com.stockmarket.sproject.application.repository.IStockTypeRepository;
+import org.springframework.stereotype.Service;
 
 @Service
 public class StockAccessiblityService {
 
-    Map<Integer, Boolean> transactionAccessiblityMap;
+    private final StockTypeService stockTypeService;
+    
+    private Map<Integer, Boolean> transactionAccessiblityMap;
 
-    IStockTypeRepository stockTypeRepository;
-
-    StockAccessiblityService(IStockTypeRepository stockTypeRepository) {
-        this.stockTypeRepository = stockTypeRepository;
+    StockAccessiblityService(StockTypeService stockTypeService) {
+        this.stockTypeService = stockTypeService;
 
         transactionAccessiblityMap = new HashMap<>();
     }
 
     public void InitTransactionAccessiblityMap() {
-        stockTypeRepository.findAll().forEach(stockType -> transactionAccessiblityMap.put(stockType.getId(), true));
+        stockTypeService.getAll().forEach(stockType -> transactionAccessiblityMap.put(stockType.getId(), true));
     }
 
     public void AppendMissing() {
-        stockTypeRepository.findAll().forEach(stockType -> {
+        stockTypeService.getAll().forEach(stockType -> {
             if (!transactionAccessiblityMap.containsKey(stockType.getId()))
                 transactionAccessiblityMap.put(stockType.getId(), true);
         });
@@ -32,10 +31,6 @@ public class StockAccessiblityService {
 
     private Boolean doesKeyExist(int stockId) {
         return transactionAccessiblityMap.containsKey(stockId);
-    }
-
-    private int getStockId(String symbol) {
-        return stockTypeRepository.findFirstBySymbol(symbol).getId();
     }
 
     public Boolean isStockAccessible(int stockId) {
@@ -48,7 +43,7 @@ public class StockAccessiblityService {
     }
 
     public Boolean isStockAccessible(String symbol) {
-        return isStockAccessible(getStockId(symbol));
+        return isStockAccessible(stockTypeService.getStockTypeId(symbol));
     }
 
     public void PauseAll() {

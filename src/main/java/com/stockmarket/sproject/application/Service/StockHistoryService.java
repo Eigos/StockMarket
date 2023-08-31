@@ -2,8 +2,10 @@ package com.stockmarket.sproject.application.Service;
 
 import java.util.List;
 
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
+import com.stockmarket.sproject.application.exception_handler.EntityNotFoundException;
 import com.stockmarket.sproject.application.model.StockHistory;
 import com.stockmarket.sproject.application.model.StockType;
 import com.stockmarket.sproject.application.model.TransactionHistory;
@@ -17,23 +19,23 @@ public class StockHistoryService {
 
     private final IStockHistoryRepository stockHistoryRepository;
 
-    private final IStockTypeRepository stockTypeRepository;
+    private final StockTypeService stockTypeService;
 
-    private final ITransactionHistoryRepository transactionHistoryRepository;
+    private TransactionService transactionService;
 
     private static final int DEFUALT_QUANTITY = 1000;
 
     public StockHistoryService(IStockHistoryRepository stockHistoryRepository,
-            IStockTypeRepository stockTypeRepository,
-            ITransactionHistoryRepository transactionHistoryRepository) {
+            StockTypeService stockTypeService,
+            @Lazy TransactionService transactionService) {
         this.stockHistoryRepository = stockHistoryRepository;
-        this.stockTypeRepository = stockTypeRepository;
-        this.transactionHistoryRepository = transactionHistoryRepository;
-
+        this.stockTypeService = stockTypeService;
+        this.transactionService = transactionService;
     }
+    
 
     public void createNewHistory(BasicStockInformation basicStockInformation) {
-        StockType stockType = stockTypeRepository.findFirstBySymbol(basicStockInformation.getSymbol());
+        StockType stockType = stockTypeService.getStockType(basicStockInformation.getSymbol());
 
         StockHistory stockHistory = new StockHistory();
 
@@ -64,8 +66,13 @@ public class StockHistoryService {
 
     public int calculateCurrentStockQuantity(StockType stockType) {
 
-        StockHistory stockHistoryPrevious = stockHistoryRepository
-                .findFirstByStockTypeOrderByUpdateTimeAsc(stockType); 
+        StockHistory stockHistoryPrevious = null;
+
+        try {
+            stockHistoryPrevious = getRecentHistory(stockType); 
+        } catch (RuntimeException e) {
+            System.out.println(e.getMessage()); // TO-DO : Use Logger
+        }
 
         if(stockHistoryPrevious == null)
             return DEFUALT_QUANTITY;
@@ -73,7 +80,7 @@ public class StockHistoryService {
         int stockQuantityPrevious = stockHistoryPrevious.getQuantity();
         int stockQuantitySpent = 0;
         
-        List<TransactionHistory> transactionHistories = transactionHistoryRepository.findAllByStockHistory(stockHistoryPrevious);
+        List<TransactionHistory> transactionHistories =  transactionService.getAll(stockHistoryPrevious);
         
         for (TransactionHistory transactionHistory : transactionHistories) {
             stockQuantitySpent += transactionHistory.getQuantity();
@@ -83,5 +90,13 @@ public class StockHistoryService {
 
         return stockQuantityCurrent;
     }
+
+    public StockHistory getRecentHistory(StockType stockType) throws RuntimeException{
+        return stockHistoryRepository
+                .findFirstByStockTypeOrderByUpdateTimeAsc(stockType)
+                .orElseThrow(() -> new EntityNotFoundException(StockHistory.class, "stockType", stockType.getSymbol()));
+
+    }
+
 
 }

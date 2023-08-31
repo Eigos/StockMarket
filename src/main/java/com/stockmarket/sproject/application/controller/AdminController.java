@@ -1,5 +1,6 @@
 package com.stockmarket.sproject.application.controller;
 
+import javax.security.auth.login.AccountNotFoundException;
 import javax.validation.Valid;
 
 import org.springframework.http.ResponseEntity;
@@ -37,9 +38,7 @@ public class AdminController {
             AuthRestController authRestController,
             AccountService accountService,
             TransactionService transactionService,
-            StockAccessiblityService stockAccessiblityService,
-            GiftCardService giftCardService,
-            IAccountRepository accountRepository) {
+            StockAccessiblityService stockAccessiblityService) {
         this.authRestController = authRestController;
         this.accountService = accountService;
         this.transactionService = transactionService;
@@ -52,7 +51,7 @@ public class AdminController {
     }
 
     @PatchMapping("/user")
-    public ResponseEntity<String> UpdateUser(@Valid @RequestBody UserUpdateRequest updateRequest) {
+    public ResponseEntity<String> UpdateUser(@Valid @RequestBody UserUpdateRequest updateRequest) throws Exception {
 
         accountService.UpdateAccount(updateRequest);
 

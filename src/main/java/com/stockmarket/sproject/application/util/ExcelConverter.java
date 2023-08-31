@@ -1,4 +1,4 @@
-package com.stockmarket.sproject.application;
+package com.stockmarket.sproject.application.util;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;

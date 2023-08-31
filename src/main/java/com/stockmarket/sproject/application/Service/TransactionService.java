@@ -5,25 +5,28 @@ import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.Optional;
 
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
-import com.stockmarket.sproject.application.UtilMethods;
 import com.stockmarket.sproject.application.dto.StockPurchaseRequest;
 import com.stockmarket.sproject.application.dto.StockPurchaseResponse;
 import com.stockmarket.sproject.application.dto.StockSellRequest;
 import com.stockmarket.sproject.application.dto.TransactionHistoryElement;
 import com.stockmarket.sproject.application.dto.TransactionHistoryResponse;
 import com.stockmarket.sproject.application.enums.TransactionType;
+import com.stockmarket.sproject.application.exception_handler.EntityNotFoundException;
+import com.stockmarket.sproject.application.exception_handler.custom_exceptions.MessageException;
+import com.stockmarket.sproject.application.exception_handler.custom_exceptions.NotEnoughBalanceException;
+import com.stockmarket.sproject.application.exception_handler.custom_exceptions.NotEnoughStockException;
+import com.stockmarket.sproject.application.exception_handler.custom_exceptions.StockAccessibilityException;
+import com.stockmarket.sproject.application.exception_handler.custom_exceptions.TransactionException;
 import com.stockmarket.sproject.application.model.Account;
 import com.stockmarket.sproject.application.model.StockHistory;
 import com.stockmarket.sproject.application.model.StockType;
 import com.stockmarket.sproject.application.model.TransactionHistory;
-import com.stockmarket.sproject.application.repository.IAccountRepository;
-import com.stockmarket.sproject.application.repository.IStockHistoryRepository;
-import com.stockmarket.sproject.application.repository.IStockTypeRepository;
 import com.stockmarket.sproject.application.repository.ITransactionHistoryRepository;
+import com.stockmarket.sproject.application.util.UtilMethods;
 
 @Service
 public class TransactionService {
@@ -34,25 +37,25 @@ public class TransactionService {
 
     private double systemBalance = 0.0;
 
-    private IAccountRepository accountRepository;
+    private final ITransactionHistoryRepository transactionHistoryRepository;
 
-    private IStockTypeRepository stockTypeRepository;
+    private final AccountService accountService;
 
-    private IStockHistoryRepository stockHistoryRepository;
+    private final StockTypeService stockTypeService;
 
-    private ITransactionHistoryRepository transactionHistoryRepository;
+    private final StockHistoryService stockHistoryService;
 
-    private StockAccessiblityService stockAccessiblityService;
-
+    private final StockAccessiblityService stockAccessiblityService;
+    
     TransactionService(
-            IAccountRepository accountRepository,
-            IStockTypeRepository stockTypeRepository,
-            IStockHistoryRepository stockHistoryRepository,
+            AccountService accountService,
+            StockTypeService stockTypeService,
+            @Lazy StockHistoryService stockHistoryService,
             ITransactionHistoryRepository transactionHistoryRepository,
             StockAccessiblityService stockAccessiblityService) {
-        this.accountRepository = accountRepository;
-        this.stockTypeRepository = stockTypeRepository;
-        this.stockHistoryRepository = stockHistoryRepository;
+        this.accountService = accountService;
+        this.stockTypeService = stockTypeService;
+        this.stockHistoryService = stockHistoryService;
         this.transactionHistoryRepository = transactionHistoryRepository;
         this.stockAccessiblityService = stockAccessiblityService;
     }
@@ -62,23 +65,23 @@ public class TransactionService {
     }
 
     public StockPurchaseResponse PurchaseStock(String username, StockPurchaseRequest stockPurchaseRequest)
-            throws Exception {
-        Account account = accountRepository.findByEmail(username);
-        StockType stockType = stockTypeRepository.findFirstBySymbol(stockPurchaseRequest.getStockSymbol());
-        StockHistory stockHistoryElement = stockHistoryRepository.findFirstByStockTypeOrderByUpdateTimeAsc(stockType);
+            throws TransactionException {
+        Account account = accountService.getAccountByEmail(username);
+        StockType stockType = stockTypeService.getStockType(stockPurchaseRequest.getStockSymbol());
+        StockHistory stockHistoryElement = stockHistoryService.getRecentHistory(stockType);
         int quantity = stockHistoryElement.getQuantity();
         int desiredQuantity = stockPurchaseRequest.getQuantity();
         double unitPrice = stockHistoryElement.getValue();
 
         if (!stockAccessiblityService.isStockAccessible(stockType.getId()))
-            throw new Exception("Stock is closed to transaction");
+            throw new StockAccessibilityException("Stock is closed to transaction");
 
         // Not enough stock
         if (StockQuantityCheck(desiredQuantity, quantity))
-            throw new Exception("Not enough stock");
+            throw new NotEnoughStockException("Not enough stock");
 
         if (!CanPurchaseStock(account.getBalance(), unitPrice, desiredQuantity))
-            throw new Exception("Not enough balance");
+            throw new NotEnoughBalanceException("Not enough balance");
 
         account.setBalance(account.getBalance() - PurchasePriceCalculateTotal(unitPrice, desiredQuantity));
 
@@ -93,7 +96,7 @@ public class TransactionService {
                         .commissionRate(getCommissionRate())
                         .build());
 
-        accountRepository.save(account);
+        accountService.save(account);
 
         return StockPurchaseResponse.builder()
                 .stockSymbol(stockType.getSymbol())
@@ -120,10 +123,12 @@ public class TransactionService {
         return quantity;
     }
 
-    public StockPurchaseResponse SellStock(String username, StockSellRequest stockSellRequest) throws Exception {
-        Account account = accountRepository.findByEmail(username);
-        StockType stockType = stockTypeRepository.findFirstBySymbol(stockSellRequest.getStockSymbol());
-        StockHistory stockHistoryElement = stockHistoryRepository.findFirstByStockTypeOrderByUpdateTimeAsc(stockType);
+    public StockPurchaseResponse SellStock(String username, StockSellRequest stockSellRequest) 
+        throws NotEnoughStockException, StockAccessibilityException, EntityNotFoundException, RuntimeException{
+
+        Account account = accountService.getAccountByEmail(username);
+        StockType stockType = stockTypeService.getStockType(stockSellRequest.getStockSymbol());
+        StockHistory stockHistoryElement = stockHistoryService.getRecentHistory(stockType);
 
         int quantity = getCurrentQuantity(account, stockType.getSymbol());
 
@@ -131,11 +136,11 @@ public class TransactionService {
         double unitPrice = stockHistoryElement.getValue();
 
         if (!stockAccessiblityService.isStockAccessible(stockType.getId()))
-            throw new Exception("Stock is closed to transaction");
+            throw new StockAccessibilityException("Stock is closed to transaction");
 
         // Not enough stock
         if (StockQuantityCheck(desiredQuantity, quantity))
-            throw new Exception("Not enough stock");
+            throw new NotEnoughStockException("Not enough stock");
 
         account.setBalance(account.getBalance() + (PurchasePriceCalculate(unitPrice, desiredQuantity)
                 - PurchaseCalculateCommission(unitPrice, desiredQuantity)));
@@ -151,7 +156,7 @@ public class TransactionService {
                         .commissionRate(getCommissionRate())
                         .build());
 
-        accountRepository.save(account);
+        accountService.save(account);
 
         return StockPurchaseResponse.builder()
                 .stockSymbol(stockType.getSymbol())
@@ -187,10 +192,7 @@ public class TransactionService {
 
     public TransactionHistoryResponse StockHistory(String username) throws Exception {
 
-        Account account = accountRepository.findByEmail(username);
-
-        if (account == null)
-            throw new Exception("Account not found");
+        Account account = accountService.getAccountByEmail(username);
 
         List<TransactionHistoryElement> elements = new ArrayList<TransactionHistoryElement>();
 
@@ -225,6 +227,10 @@ public class TransactionService {
                 .build();
 
         return transactionHistoryResponse;
+    }
+
+    public List<TransactionHistory> getAll(StockHistory stockHistory){
+        return transactionHistoryRepository.findAllByStockHistory(stockHistory);
     }
 
     public double getCommissionRate() {

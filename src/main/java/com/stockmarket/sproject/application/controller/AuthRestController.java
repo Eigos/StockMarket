@@ -39,7 +39,7 @@ public class AuthRestController {
 
 
     @PostMapping("/login")
-    public ResponseEntity<TokenResponse> creteToken(@RequestBody AuthRequest authRequest) throws Exception {
+    public ResponseEntity<TokenResponse> creteToken(@Valid @RequestBody AuthRequest authRequest) throws Exception {
         try {
             authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(authRequest.getUsername(), authRequest.getPassword()));
         } catch (BadCredentialsException ex) {
