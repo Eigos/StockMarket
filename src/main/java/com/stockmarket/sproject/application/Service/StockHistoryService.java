@@ -80,9 +80,13 @@ public class StockHistoryService {
         int stockQuantityPrevious = stockHistoryPrevious.getQuantity();
         int stockQuantitySpent = 0;
         
+        //TO-DO : Implement a JPA query method that returns all transactions after that given date
         List<TransactionHistory> transactionHistories =  transactionService.getAll(stockHistoryPrevious);
         
         for (TransactionHistory transactionHistory : transactionHistories) {
+            if(stockHistoryPrevious.getUpdateTime().compareTo(transactionHistory.getTransactionDate()) == 1)
+                continue;
+
             stockQuantitySpent += transactionHistory.getQuantity();
         }
         

@@ -16,7 +16,6 @@ import com.stockmarket.sproject.application.dto.TransactionHistoryElement;
 import com.stockmarket.sproject.application.dto.TransactionHistoryResponse;
 import com.stockmarket.sproject.application.enums.TransactionType;
 import com.stockmarket.sproject.application.exception_handler.EntityNotFoundException;
-import com.stockmarket.sproject.application.exception_handler.custom_exceptions.MessageException;
 import com.stockmarket.sproject.application.exception_handler.custom_exceptions.NotEnoughBalanceException;
 import com.stockmarket.sproject.application.exception_handler.custom_exceptions.NotEnoughStockException;
 import com.stockmarket.sproject.application.exception_handler.custom_exceptions.StockAccessibilityException;
@@ -216,7 +215,6 @@ public class TransactionService {
                             .date(transactionHistoryElement.getTransactionDate())
                             .transactionType(transactionHistoryElement.getTransactionType().name())
                             .build());
-
         }
 
         TransactionHistoryResponse transactionHistoryResponse = TransactionHistoryResponse.builder()
@@ -236,5 +234,6 @@ public class TransactionService {
     public double getCommissionRate() {
         return commissionRate;
     }
+
 
 }

@@ -1,11 +1,8 @@
 package com.stockmarket.sproject.application.controller;
 
-import javax.security.auth.login.AccountNotFoundException;
 import javax.validation.Valid;
 
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -15,15 +12,10 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.stockmarket.sproject.Security.Jwt.Dto.SignUpRequest;
 import com.stockmarket.sproject.application.Service.AccountService;
-import com.stockmarket.sproject.application.Service.GiftCardService;
 import com.stockmarket.sproject.application.Service.StockAccessiblityService;
 import com.stockmarket.sproject.application.Service.TransactionService;
 import com.stockmarket.sproject.application.dto.CommisionRateChangeRequest;
-import com.stockmarket.sproject.application.dto.GiftCardRequest;
-import com.stockmarket.sproject.application.dto.GiftCardResponse;
 import com.stockmarket.sproject.application.dto.UserUpdateRequest;
-import com.stockmarket.sproject.application.model.GiftCard;
-import com.stockmarket.sproject.application.repository.IAccountRepository;
 
 @RestController()
 @RequestMapping("/admin")

@@ -9,6 +9,8 @@ import org.springframework.stereotype.Service;
 
 import com.stockmarket.sproject.application.dto.GiftCardResponse;
 import com.stockmarket.sproject.application.exception_handler.EntityNotFoundException;
+import com.stockmarket.sproject.application.exception_handler.custom_exceptions.AccountDoesNotMatchException;
+import com.stockmarket.sproject.application.exception_handler.custom_exceptions.GiftCardInvalidException;
 import com.stockmarket.sproject.application.exception_handler.custom_exceptions.MessageException;
 import com.stockmarket.sproject.application.model.Account;
 import com.stockmarket.sproject.application.model.GiftCard;
@@ -21,7 +23,7 @@ import com.stockmarket.sproject.application.util.IKeyGenerator;
 public class GiftCardService {
 
     private final IGiftCardRepository giftCardRepository;
-    
+
     private final AccountService accountService;
 
     GiftCardService(IGiftCardRepository giftCardRepository,
@@ -33,8 +35,9 @@ public class GiftCardService {
     public GiftCardResponse generateGiftCard(String creatorAccountStr, Optional<String> targeAccountStr, double value) {
 
         Account creatorAccount = accountService.getAccountByEmail(creatorAccountStr);
-        
-        Account targeAccount = targeAccountStr.isPresent() ? accountService.getAccountByEmail(targeAccountStr.get()) : null;
+
+        Account targeAccount = targeAccountStr.isPresent() ? accountService.getAccountByEmail(targeAccountStr.get())
+                : null;
 
         IKeyGenerator keyGenerator = new BasicKeyGenerator();
 
@@ -59,16 +62,19 @@ public class GiftCardService {
                 .build();
     }
 
-    public void UseGiftCard(String accountStr, String cardCode) throws RuntimeException{
+    public void UseGiftCard(String accountStr, String cardCode) throws RuntimeException {
 
         Account account = accountService.getAccountByEmail(accountStr);
 
         GiftCard giftCard = getCard(cardCode);
 
-        if(giftCard.getTargetAccount() != null){
+        if (giftCard.isValid() == false)
+            throw new GiftCardInvalidException("Invalid gift card. Gift card may have already been used.");
 
-            if(Integer.compare(giftCard.getTargetAccount().getId(), account.getId()) != 1)
-                throw new MessageException("Given account and gift card's target account does not match");
+        if (giftCard.getTargetAccount() != null) {
+
+            if (Integer.compare(giftCard.getTargetAccount().getId(), account.getId()) != 1)
+                throw new AccountDoesNotMatchException("Given account and gift card's target account does not match");
         }
 
         account.setBalance(account.getBalance() + giftCard.getValue());
@@ -80,9 +86,9 @@ public class GiftCardService {
         giftCard.setValid(false);
     }
 
-    public GiftCard getCard(String cardCode){
+    public GiftCard getCard(String cardCode) {
         return giftCardRepository.findBycardCode(cardCode)
-            .orElseThrow(()-> new EntityNotFoundException(GiftCard.class, "cardCode", cardCode));
+                .orElseThrow(() -> new EntityNotFoundException(GiftCard.class, "cardCode", cardCode));
     }
 
 }
