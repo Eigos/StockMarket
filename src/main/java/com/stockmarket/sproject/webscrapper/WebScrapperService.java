@@ -11,6 +11,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import com.stockmarket.sproject.application.Service.StockHistoryService;
+import com.stockmarket.sproject.application.Service.StockQuantityService;
+import com.stockmarket.sproject.application.model.StockQuantity;
 import com.stockmarket.sproject.application.model.StockType;
 import com.stockmarket.sproject.application.repository.IStockTypeRepository;
 
@@ -23,6 +25,8 @@ public class WebScrapperService {
 
     private final StockHistoryService stockHistoryService;
 
+    private final StockQuantityService stockQuantityService;
+
     @Value("${spring.jpa.properties.hibernate.jdbc.batch_size}")
     private int BATCH_SIZE;
 
@@ -31,11 +35,13 @@ public class WebScrapperService {
 
     public WebScrapperService(IWebScrapper<BasicStockInformation> webScrapperAsync,
             IStockTypeRepository stockTypeRepository,
-            StockHistoryService stockHistoryService) {
+            StockHistoryService stockHistoryService,
+            StockQuantityService stockQuantityService) {
 
         this.webScrapperAsync = webScrapperAsync;
         this.stockTypeRepository = stockTypeRepository;
         this.stockHistoryService = stockHistoryService;
+        this.stockQuantityService = stockQuantityService;
     }
 
     public List<BasicStockInformation> getDataFromNet() {
@@ -45,7 +51,7 @@ public class WebScrapperService {
     @Transactional
     public void saveData(List<BasicStockInformation> stockList) {
 
-        //TO-DO: Optimization issue. Method works too slow.
+        // TO-DO: Optimization issue. Method works too slow.
 
         List<StockType> stockTypes = new ArrayList<>();
 
@@ -55,10 +61,10 @@ public class WebScrapperService {
             stockType.setSymbol(stock.getSymbol());
             if (!stockTypeRepository.existsBySymbol(stockType.getSymbol()))
                 stockTypes.add(stockType);
-            
+
         }
 
-
+        /*
         for (int i = 0; i < stockTypes.size(); i++) {
             if (i > 0 && i % BATCH_SIZE == 0) {
                 entityManager.flush();
@@ -66,9 +72,23 @@ public class WebScrapperService {
             }
             entityManager.persist(stockTypes.get(i));
         }
+        */
+
+        stockTypeRepository.saveAll(stockTypes);    
         
+
+        // TO-DO : Optimize
         stockHistoryService.createNewHistory(stockList);
-        
+
+        // TO-DO : Optimize
+        for (StockType stockType : stockTypes) {
+            StockQuantity.builder()
+                    .stockType(stockType)
+                    .quantity(StockQuantityService.DEFUALT_QUANTITY);
+
+            stockQuantityService.UpdateStockQuantity(stockType);
+        }
+
     }
 
     public void saveData(BasicStockInformation stock) {

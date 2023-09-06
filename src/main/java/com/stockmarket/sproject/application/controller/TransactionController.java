@@ -4,8 +4,8 @@ import java.io.ByteArrayInputStream;
 
 import javax.validation.Valid;
 
-import org.apache.catalina.connector.Response;
 import org.springframework.core.io.InputStreamResource;
+import org.springframework.http.ContentDisposition;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -21,6 +21,7 @@ import com.stockmarket.sproject.application.dto.StockPurchaseRequest;
 import com.stockmarket.sproject.application.dto.StockPurchaseResponse;
 import com.stockmarket.sproject.application.dto.StockSellRequest;
 import com.stockmarket.sproject.application.dto.TransactionHistoryResponse;
+import com.stockmarket.sproject.application.dto.TransactionPortfolio;
 import com.stockmarket.sproject.application.util.ExcelConverter;
 
 @RestController
@@ -78,6 +79,19 @@ public class TransactionController {
         return ResponseEntity.ok(responseBody);
     }
 
+    @GetMapping("/portfolio")
+    public ResponseEntity<TransactionPortfolio> getTransactionPortfolio() throws Exception{
+
+        UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext()
+                .getAuthentication().getPrincipal();
+
+        String username = userDetails.getUsername();
+
+        TransactionPortfolio responseBody = transactionService.getProtfolio(username);
+
+        return ResponseEntity.ok(responseBody);
+    }
+
     @GetMapping("/history-excel")
     public ResponseEntity<InputStreamResource> getPurchaseStockHistoryExcel() throws Exception{
 
@@ -90,7 +104,7 @@ public class TransactionController {
 
         HttpHeaders headers = new HttpHeaders();
 
-        headers.add("Content-Disposition", "attachment; filename=transaction_history.csv");
+        headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=transaction_history.csv");
 
         return ResponseEntity.ok().headers(headers).body(new InputStreamResource(in));
     }

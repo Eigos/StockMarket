@@ -11,21 +11,21 @@ public class StockTypeService {
 
     private final IStockTypeRepository stockTypeRepository;
 
-    StockTypeService(IStockTypeRepository stockTypeRepository){
+    public StockTypeService(IStockTypeRepository stockTypeRepository){
         this.stockTypeRepository = stockTypeRepository;
     }
 
-    int getStockTypeId(String symbol) throws EntityNotFoundException {
+    public int getStockTypeId(String symbol) throws EntityNotFoundException {
         return getStockType(symbol).getId();
     }
 
-    StockType getStockType(String symbol) throws EntityNotFoundException {
+    public StockType getStockType(String symbol) throws EntityNotFoundException {
         return stockTypeRepository
                 .findFirstBySymbol(symbol)
                 .orElseThrow(() -> new EntityNotFoundException(StockType.class, "symbol", symbol));
     }
 
-    Iterable<StockType> getAll() {
+    public Iterable<StockType> getAll() {
         return stockTypeRepository.findAll();
     }
 

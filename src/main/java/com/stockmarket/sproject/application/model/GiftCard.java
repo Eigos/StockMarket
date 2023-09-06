@@ -1,5 +1,6 @@
 package com.stockmarket.sproject.application.model;
 
+import java.time.LocalDateTime;
 import java.util.Date;
 
 import javax.persistence.Column;
@@ -34,7 +35,7 @@ public class GiftCard {
     @GenericGenerator(name = "sequenceIdGenerator", strategy = "sequence", parameters = @Parameter(name = SequenceStyleGenerator.CONFIG_PREFER_SEQUENCE_PER_ENTITY, value = "true"))
     @Column(updatable = false, nullable = false)
     int id;
-    
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "creator_id")
     @EqualsAndHashCode.Exclude
@@ -58,14 +59,10 @@ public class GiftCard {
 
     String cardCode;
 
-    @javax.persistence.PostPersist
+    @javax.persistence.PrePersist
     private void setExpireTime() {
-        if (creationTime != null) {
-            long expireDelay = 60 * 24 * 60 * 60 * 1000; // day * hour * min * sec * ms
-            expireTime = new Date(creationTime.getTime() + expireDelay);
-        }else{
-            System.out.println("creation time is null");
-        }
+        long expireDelay = (60 * 24 * 60 * 60 * 1000) + System.currentTimeMillis(); // day * hour * min * sec * ms
+        expireTime = new Date(expireDelay);
     }
 
 }

@@ -9,5 +9,5 @@ import com.stockmarket.sproject.application.model.StockType;
 
 
 public interface IStockHistoryRepository extends CrudRepository<StockHistory, Integer>{
-    Optional<StockHistory> findFirstByStockTypeOrderByUpdateTimeAsc(StockType stockType);
+    Optional<StockHistory> findFirstByStockTypeOrderByUpdateTimeDesc(StockType stockType);
 }

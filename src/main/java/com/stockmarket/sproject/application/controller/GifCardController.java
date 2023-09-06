@@ -14,15 +14,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.stockmarket.sproject.application.Service.AccountService;
 import com.stockmarket.sproject.application.Service.GiftCardService;
-import com.stockmarket.sproject.application.Service.StockAccessiblityService;
-import com.stockmarket.sproject.application.Service.TransactionService;
 import com.stockmarket.sproject.application.dto.GiftCardRequest;
 import com.stockmarket.sproject.application.dto.GiftCardResponse;
 import com.stockmarket.sproject.application.dto.GiftCardUseRequest;
-import com.stockmarket.sproject.application.model.GiftCard;
-import com.stockmarket.sproject.application.repository.IAccountRepository;
 
 @RestController
 @RequestMapping("/gift-card")

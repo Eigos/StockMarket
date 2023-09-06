@@ -1,6 +1,8 @@
 package com.stockmarket.sproject.application.Service;
 
+import java.time.Clock;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Date;
 import java.util.Optional;
@@ -11,10 +13,8 @@ import com.stockmarket.sproject.application.dto.GiftCardResponse;
 import com.stockmarket.sproject.application.exception_handler.EntityNotFoundException;
 import com.stockmarket.sproject.application.exception_handler.custom_exceptions.AccountDoesNotMatchException;
 import com.stockmarket.sproject.application.exception_handler.custom_exceptions.GiftCardInvalidException;
-import com.stockmarket.sproject.application.exception_handler.custom_exceptions.MessageException;
 import com.stockmarket.sproject.application.model.Account;
 import com.stockmarket.sproject.application.model.GiftCard;
-import com.stockmarket.sproject.application.repository.IAccountRepository;
 import com.stockmarket.sproject.application.repository.IGiftCardRepository;
 import com.stockmarket.sproject.application.util.BasicKeyGenerator;
 import com.stockmarket.sproject.application.util.IKeyGenerator;
@@ -81,9 +81,12 @@ public class GiftCardService {
 
         accountService.save(account);
 
-        giftCard.setUsedTime(Date.from(LocalDate.now().atStartOfDay(ZoneId.systemDefault()).toInstant()));
+        //giftCard.setUsedTime(Date.from(LocalDate.now().atStartOfDay(ZoneId.systemDefault()).toInstant()));
+        giftCard.setUsedTime(new Date(System.currentTimeMillis()));
 
         giftCard.setValid(false);
+
+        giftCardRepository.save(giftCard);
     }
 
     public GiftCard getCard(String cardCode) {

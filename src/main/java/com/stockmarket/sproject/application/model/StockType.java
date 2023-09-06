@@ -47,4 +47,7 @@ public class StockType {
     @EqualsAndHashCode.Exclude
     RuleSet ruleSet;
 
+    @OneToMany(mappedBy = "stockType", fetch = FetchType.LAZY)
+    @EqualsAndHashCode.Exclude
+    Set<StockHistory> stockQuantity;
 }

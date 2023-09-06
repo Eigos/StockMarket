@@ -6,12 +6,10 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
 import com.stockmarket.sproject.application.exception_handler.EntityNotFoundException;
+import com.stockmarket.sproject.application.exception_handler.custom_exceptions.StockTypeDoesNotExistException;
 import com.stockmarket.sproject.application.model.StockHistory;
 import com.stockmarket.sproject.application.model.StockType;
-import com.stockmarket.sproject.application.model.TransactionHistory;
 import com.stockmarket.sproject.application.repository.IStockHistoryRepository;
-import com.stockmarket.sproject.application.repository.IStockTypeRepository;
-import com.stockmarket.sproject.application.repository.ITransactionHistoryRepository;
 import com.stockmarket.sproject.webscrapper.BasicStockInformation;
 
 @Service
@@ -21,16 +19,15 @@ public class StockHistoryService {
 
     private final StockTypeService stockTypeService;
 
-    private TransactionService transactionService;
-
-    private static final int DEFUALT_QUANTITY = 1000;
+    private final StockQuantityService stockQuantityService;
 
     public StockHistoryService(IStockHistoryRepository stockHistoryRepository,
             StockTypeService stockTypeService,
-            @Lazy TransactionService transactionService) {
+            @Lazy TransactionService transactionService,
+            StockQuantityService stockQuantityService) {
         this.stockHistoryRepository = stockHistoryRepository;
         this.stockTypeService = stockTypeService;
-        this.transactionService = transactionService;
+        this.stockQuantityService = stockQuantityService;
     }
     
 
@@ -39,7 +36,15 @@ public class StockHistoryService {
 
         StockHistory stockHistory = new StockHistory();
 
-        stockHistory.setQuantity(calculateCurrentStockQuantity(stockType));
+        int currentQuantity = -1;
+
+        try {
+            currentQuantity = calculateCurrentStockQuantity(stockType);
+        } catch (StockTypeDoesNotExistException e) {
+            currentQuantity = StockQuantityService.DEFUALT_QUANTITY;
+        }
+
+        stockHistory.setQuantity(currentQuantity);
         stockHistory.setStockType(stockType);
         stockHistory.setValue(basicStockInformation.getValue());
 
@@ -57,50 +62,28 @@ public class StockHistoryService {
 
         StockHistory stockHistory = new StockHistory();
 
-        stockHistory.setQuantity(DEFUALT_QUANTITY);
+        stockHistory.setQuantity(StockQuantityService.DEFUALT_QUANTITY);
         stockHistory.setStockType(stockType);
         stockHistory.setValue(value);
 
         stockHistoryRepository.save(stockHistory);
     }
 
-    public int calculateCurrentStockQuantity(StockType stockType) {
-
-        StockHistory stockHistoryPrevious = null;
-
-        try {
-            stockHistoryPrevious = getRecentHistory(stockType); 
-        } catch (RuntimeException e) {
-            System.out.println(e.getMessage()); // TO-DO : Use Logger
-        }
-
-        if(stockHistoryPrevious == null)
-            return DEFUALT_QUANTITY;
-
-        int stockQuantityPrevious = stockHistoryPrevious.getQuantity();
-        int stockQuantitySpent = 0;
-        
-        //TO-DO : Implement a JPA query method that returns all transactions after that given date
-        List<TransactionHistory> transactionHistories =  transactionService.getAll(stockHistoryPrevious);
-        
-        for (TransactionHistory transactionHistory : transactionHistories) {
-            if(stockHistoryPrevious.getUpdateTime().compareTo(transactionHistory.getTransactionDate()) == 1)
-                continue;
-
-            stockQuantitySpent += transactionHistory.getQuantity();
-        }
-        
-        int stockQuantityCurrent = stockQuantityPrevious - stockQuantitySpent;
-
-        return stockQuantityCurrent;
+    public int calculateCurrentStockQuantity(StockType stockType) throws StockTypeDoesNotExistException{
+        return stockQuantityService.getStockQuantity(stockType).getQuantity();
     }
 
     public StockHistory getRecentHistory(StockType stockType) throws RuntimeException{
         return stockHistoryRepository
-                .findFirstByStockTypeOrderByUpdateTimeAsc(stockType)
+                .findFirstByStockTypeOrderByUpdateTimeDesc(stockType)
                 .orElseThrow(() -> new EntityNotFoundException(StockHistory.class, "stockType", stockType.getSymbol()));
 
     }
 
+    public StockHistory getHistoryById(int id){
+        return stockHistoryRepository
+                .findById(id)
+                .orElseThrow(() -> new EntityNotFoundException(StockHistory.class, "stockType", String.valueOf(id)));
+    }
 
 }

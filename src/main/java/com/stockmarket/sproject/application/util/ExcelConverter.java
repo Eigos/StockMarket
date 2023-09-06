@@ -3,7 +3,6 @@ package com.stockmarket.sproject.application.util;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
@@ -89,7 +88,12 @@ public class ExcelConverter {
 
         String directoryPath = getDirectoryPath();
 
-        TryGenerateDirectory(directoryPath);
+        try {
+            TryGenerateDirectory(directoryPath);
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+            System.out.println("Directory might have already exist");
+        }
 
         String filePath = getFilePath(username);
         
